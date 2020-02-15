@@ -76,6 +76,7 @@ public class ConstantFolding {
     ASTNode node = parse(inputFileAsString);
 
     // TODO: complete constant folding
+    node.accept(new ConstantFoldingVisitor());
 
     return node;
   }

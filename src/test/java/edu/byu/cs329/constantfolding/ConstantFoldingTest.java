@@ -13,12 +13,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.byu.cs329.constantfolding.ConstantFolding;
-
 public class ConstantFoldingTest {
 
   static final Logger log = LoggerFactory.getLogger(ConstantFoldingTest.class);
-  
+
   private URI getURI(final String fileName) {
     URL url = ClassLoader.getSystemResource(fileName);
     Objects.requireNonNull(url, "\'" + fileName + "\'" + " not found in classpath");
@@ -29,9 +27,15 @@ public class ConstantFoldingTest {
       log.error("Failed to get URI for" + fileName);
       e.printStackTrace();
     }
-    return uri;    
+    return uri;
   }
-  
+
+  private List<String> getLiteralList(ASTNode node) {
+    LiteralTrackerVisitor literalTrackerVisitor = new LiteralTrackerVisitor();
+    node.accept(literalTrackerVisitor);
+    return literalTrackerVisitor.literalList;
+  }
+
   @ParameterizedTest(name = "Should return only literal {0} when given file {1}")
   @CsvSource({"7, BinaryAdd.java", "14, OneNestedBinaryAdd.java", "11, VariableWithOneNestedBinaryAdd.java"})
   void Should_ReturnOneLiteral_When_GivenFileWithOneLiteralExpression(String expected, String fileName) {
@@ -39,6 +43,12 @@ public class ConstantFoldingTest {
     Objects.requireNonNull(uri, "Failed to get URI for " + fileName);
 
     // TODO: add folding test code here
+    ASTNode node = ConstantFolding.fold(uri);
+
+    List<String> literals = getLiteralList(node);
+    Assertions.assertEquals(1, literals.size());
+    String token = literals.get(0);
+    Assertions.assertEquals(expected, token);
   }
-  
+
 }
